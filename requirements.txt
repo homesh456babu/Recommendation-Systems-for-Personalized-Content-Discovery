@@ -1,0 +1,9 @@
+numpy
+pandas
+scipy
+matplotlib
+fpdf2
+flask
+requests
+tqdm
+scikit-learn
