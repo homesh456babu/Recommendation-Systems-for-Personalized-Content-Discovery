@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AURA-REC // Personalized Content Discovery Engine</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="glow-bg"></div>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo">
+                <i class="fa-solid fa-wand-magic-sparkles logo-icon"></i>
+                <span class="logo-text">AURA<span class="logo-accent">-REC</span></span>
+            </div>
+            <div class="system-badge">
+                <span class="pulse-dot"></span>
+                <span class="badge-text" id="status-badge">Engine Loading...</span>
+            </div>
+        </header>
+
+        <!-- Stats Overview Row -->
+        <section class="stats-grid" id="stats-section">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+                <div class="stat-content">
+                    <span class="stat-label">Platform Users</span>
+                    <h3 class="stat-value" id="stat-users">--</h3>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-film"></i></div>
+                <div class="stat-content">
+                    <span class="stat-label">Catalog Movies</span>
+                    <h3 class="stat-value" id="stat-movies">--</h3>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-percentage"></i></div>
+                <div class="stat-content">
+                    <span class="stat-label">Matrix Sparsity</span>
+                    <h3 class="stat-value" id="stat-sparsity">--</h3>
+                </div>
+            </div>
+            <div class="stat-card metric-svd">
+                <div class="stat-icon"><i class="fa-solid fa-chart-line"></i></div>
+                <div class="stat-content">
+                    <span class="stat-label">SVD RMSE / MAP@10</span>
+                    <h3 class="stat-value" id="stat-svd-metrics">-- / --</h3>
+                </div>
+            </div>
+            <div class="stat-card metric-cf">
+                <div class="stat-icon"><i class="fa-solid fa-square-poll-vertical"></i></div>
+                <div class="stat-content">
+                    <span class="stat-label">Item-CF RMSE / MAP@10</span>
+                    <h3 class="stat-value" id="stat-cf-metrics">-- / --</h3>
+                </div>
+            </div>
+            <div class="stat-card metric-user-cf">
+                <div class="stat-icon"><i class="fa-solid fa-users-viewfinder"></i></div>
+                <div class="stat-content">
+                    <span class="stat-label">User-CF RMSE / MAP@10</span>
+                    <h3 class="stat-value" id="stat-user-cf-metrics">-- / --</h3>
+                </div>
+            </div>
+            <div class="stat-card metric-ncf">
+                <div class="stat-icon"><i class="fa-solid fa-brain"></i></div>
+                <div class="stat-content">
+                    <span class="stat-label">Neural-CF RMSE / MAP@10</span>
+                    <h3 class="stat-value" id="stat-ncf-metrics">-- / --</h3>
+                </div>
+            </div>
+            <div class="stat-card metric-content">
+                <div class="stat-icon"><i class="fa-solid fa-tags"></i></div>
+                <div class="stat-content">
+                    <span class="stat-label">Content RMSE / MAP@10</span>
+                    <h3 class="stat-value" id="stat-content-metrics">-- / --</h3>
+                </div>
+            </div>
+        </section>
+
+        <!-- Workspace Layout -->
+        <div class="workspace">
+            <!-- Left Control Panel -->
+            <aside class="control-panel">
+                <!-- User Lookup Card -->
+                <div class="glass-card panel-card">
+                    <h2 class="card-title"><i class="fa-solid fa-user-gear"></i> User Discovery</h2>
+                    <div class="form-group">
+                        <label for="user-id-input">Enter User ID (1 - 943)</label>
+                        <div class="input-with-button">
+                            <input type="number" id="user-id-input" min="1" max="943" value="1" placeholder="User ID">
+                            <button id="load-user-btn" class="btn btn-primary">Load</button>
+                        </div>
+                    </div>
+                    <div class="quick-select">
+                        <span class="quick-label">Sample Users:</span>
+                        <div class="quick-chips">
+                            <button class="chip-btn" data-user="1">User 1</button>
+                            <button class="chip-btn" data-user="100">User 100</button>
+                            <button class="chip-btn" data-user="500">User 500</button>
+                            <button class="chip-btn" id="random-user-btn"><i class="fa-solid fa-shuffle"></i> Random</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cold Start Preferences -->
+                <div class="glass-card panel-card">
+                    <h2 class="card-title"><i class="fa-solid fa-seedling"></i> Cold-Start Simulator</h2>
+                    <p class="card-desc">Simulate recommendations for a brand new user by selecting genres:</p>
+                    <div class="genre-selector">
+                        <div class="genre-checkbox">
+                            <input type="checkbox" id="genre-action" value="Action">
+                            <label for="genre-action"><i class="fa-solid fa-explosion"></i> Action</label>
+                        </div>
+                        <div class="genre-checkbox">
+                            <input type="checkbox" id="genre-scifi" value="Sci-Fi">
+                            <label for="genre-scifi"><i class="fa-solid fa-shuttle-space"></i> Sci-Fi</label>
+                        </div>
+                        <div class="genre-checkbox">
+                            <input type="checkbox" id="genre-comedy" value="Comedy">
+                            <label for="genre-comedy"><i class="fa-solid fa-face-laugh-beam"></i> Comedy</label>
+                        </div>
+                        <div class="genre-checkbox">
+                            <input type="checkbox" id="genre-drama" value="Drama">
+                            <label for="genre-drama"><i class="fa-solid fa-theater-masks"></i> Drama</label>
+                        </div>
+                        <div class="genre-checkbox">
+                            <input type="checkbox" id="genre-romance" value="Romance">
+                            <label for="genre-romance"><i class="fa-solid fa-heart"></i> Romance</label>
+                        </div>
+                    </div>
+                    <button id="cold-start-btn" class="btn btn-secondary btn-full"><i class="fa-solid fa-rocket"></i> Get Recommendations</button>
+                </div>
+
+                <!-- Similar Items Finder -->
+                <div class="glass-card panel-card">
+                    <h2 class="card-title"><i class="fa-solid fa-magnifying-glass"></i> Item Similarity Lookup</h2>
+                    <div class="form-group">
+                        <label for="movie-id-input">Enter Movie ID</label>
+                        <div class="input-with-button">
+                            <input type="number" id="movie-id-input" min="1" value="1" placeholder="Movie ID">
+                            <button id="find-similar-btn" class="btn btn-accent">Find</button>
+                        </div>
+                    </div>
+                    <p class="small-info">Example: 1 (Toy Story), 50 (Star Wars), 98 (Silence of the Lambs), 127 (Godfather)</p>
+                </div>
+            </aside>
+
+            <!-- Right Results Panel -->
+            <main class="results-panel">
+                <!-- User History Section -->
+                <section class="glass-card main-card hide" id="user-history-section">
+                    <div class="card-header">
+                        <h2 class="card-title"><i class="fa-solid fa-history"></i> User <span id="current-user-title">#1</span>: Historical Ratings</h2>
+                        <span class="badge badge-info" id="history-count">0 movies</span>
+                    </div>
+                    <div class="history-scroll-container">
+                        <div class="history-grid" id="user-history-grid">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Recommendations Section -->
+                <section class="hide" id="recommendations-section">
+                    <div class="recommendation-header">
+                        <h2>Personalized Content discovery</h2>
+                    </div>
+                    <div class="showdown-grid">
+                        <!-- SVD Column -->
+                        <div class="glass-card model-column svd-gradient">
+                            <div class="model-header">
+                                <div>
+                                    <h3 class="column-title"><i class="fa-solid fa-braille"></i> Funk SVD</h3>
+                                    <span class="column-subtitle">Matrix Factorization (Latent Factors)</span>
+                                </div>
+                                <span class="badge badge-svd">SVD Predictor</span>
+                            </div>
+                            <div class="recommendations-list" id="svd-recs-list">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- CF Column -->
+                        <div class="glass-card model-column cf-gradient">
+                            <div class="model-header">
+                                <div>
+                                    <h3 class="column-title"><i class="fa-solid fa-network-wired"></i> Item-Based CF</h3>
+                                    <span class="column-subtitle">Collaborative Filtering (Item-Item Cosine)</span>
+                                </div>
+                                <span class="badge badge-cf">Similarity Engine</span>
+                            </div>
+                            <div class="recommendations-list" id="cf-recs-list">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- User-CF Column -->
+                        <div class="glass-card model-column user-cf-gradient">
+                            <div class="model-header">
+                                <div>
+                                    <h3 class="column-title"><i class="fa-solid fa-users-viewfinder"></i> User-Based CF</h3>
+                                    <span class="column-subtitle">Collaborative Filtering (User-User Cosine)</span>
+                                </div>
+                                <span class="badge badge-user-cf">User Engine</span>
+                            </div>
+                            <div class="recommendations-list" id="user-cf-recs-list">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Neural-CF Column -->
+                        <div class="glass-card model-column ncf-gradient">
+                            <div class="model-header">
+                                <div>
+                                    <h3 class="column-title"><i class="fa-solid fa-brain"></i> Neural CF</h3>
+                                    <span class="column-subtitle">Deep Learning (NeuMF GMF+MLP)</span>
+                                </div>
+                                <span class="badge badge-ncf">NeuMF Champion</span>
+                            </div>
+                            <div class="recommendations-list" id="ncf-recs-list">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Content-Based Column -->
+                        <div class="glass-card model-column content-gradient">
+                            <div class="model-header">
+                                <div>
+                                    <h3 class="column-title"><i class="fa-solid fa-tags"></i> Content-Based</h3>
+                                    <span class="column-subtitle">TF-IDF Title Similarity + Year</span>
+                                </div>
+                                <span class="badge badge-content">Title Engine</span>
+                            </div>
+                            <div class="recommendations-list" id="content-recs-list">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Cold Start / Popular Results -->
+                <section class="glass-card main-card hide" id="coldstart-section">
+                    <div class="card-header">
+                        <h2 class="card-title"><i class="fa-solid fa-sparkles text-sparkle"></i> Cold-Start & Discovery Charts</h2>
+                        <span class="badge badge-secondary" id="coldstart-genres">Popular Content</span>
+                    </div>
+                    <div class="horizontal-recs-grid" id="coldstart-list">
+                        <!-- Populated dynamically -->
+                    </div>
+                </section>
+
+                <!-- Similar Movies Results -->
+                <section class="glass-card main-card hide" id="similar-movies-section">
+                    <div class="card-header">
+                        <h2 class="card-title"><i class="fa-solid fa-clone"></i> Content Similar to: <span id="similar-target-title" class="text-accent">--</span></h2>
+                    </div>
+                    <div class="horizontal-recs-grid" id="similar-movies-list">
+                        <!-- Populated dynamically -->
+                    </div>
+                </section>
+
+                <!-- Empty State (Initial View) -->
+                <section class="glass-card main-card empty-state" id="empty-state-section">
+                    <i class="fa-solid fa-film empty-icon"></i>
+                    <h2>Personalized Discovery Workspace</h2>
+                    <p>Enter a User ID in the panel to inspect rating history and compare SVD and Item-CF recommendations, or search for similar content and test cold-start scenarios.</p>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
